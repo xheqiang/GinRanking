@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	ID       int    `json:"id"`
+	Id       int    `json:"id"`
 	UserName string `json:"user_name"`
 	Password string `json:"password"`
 	/* CreatedAt CustomTime `json:"created_at"`
@@ -17,7 +17,7 @@ type User struct {
 }
 
 type UserInfo struct {
-	ID        int    `json:"id"`
+	Id        int    `json:"id"`
 	UserName  string `json:"user_name"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
@@ -51,7 +51,7 @@ func GetUserInfoById(id int) (UserInfo, error) {
 	}
 
 	UserRes := UserInfo{
-		ID:        user.ID,
+		Id:        user.Id,
 		UserName:  user.UserName,
 		CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
@@ -72,7 +72,7 @@ func GetAllUserList() ([]UserInfo, error) {
 
 	for _, u := range users {
 		userInfo := UserInfo{
-			ID:        u.ID,
+			Id:        u.Id,
 			UserName:  u.UserName,
 			CreatedAt: u.CreatedAt.Format("2006-01-02 15:04:05"),
 			UpdatedAt: u.UpdatedAt.Format("2006-01-02 15:04:05"),
@@ -94,13 +94,24 @@ func GetUserInfoByUserName(user_name string) (UserInfo, error) {
 	}
 
 	userInfo = UserInfo{
-		ID:        user.ID,
+		Id:        user.Id,
 		UserName:  user.UserName,
 		CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}
 
 	return userInfo, err
+}
+
+func GetUserByUserName(user_name string) (User, error) {
+	var user User
+
+	err := DB.Where("user_name = ?", user_name).First(&user).Error
+	if err != nil {
+		return user, err
+	}
+
+	return user, err
 }
 
 func AddUser(user_name, password string) (int, error) {
@@ -115,7 +126,7 @@ func AddUser(user_name, password string) (int, error) {
 	}
 
 	err := DB.Create(&user).Error
-	return user.ID, err
+	return user.Id, err
 }
 
 func UpdateUserName(id int, user_name string) error {
@@ -147,7 +158,7 @@ func DeleteUserById(id int) (int, error) {
 // 其它方法处理 user.created_at 和 user.updated_at
 /* func formatUser(u User) map[string]interface{} {
 	return map[string]interface{}{
-		"id":         u.ID,
+		"id":         u.Id,
 		"user_name":  u.UserName,
 		"password":   u.Password,
 		"created_at": u.CreatedAt.Format("2006-01-02 15:04:05"),

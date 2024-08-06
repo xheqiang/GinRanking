@@ -7,6 +7,7 @@ import (
 	"ginRanking/util/logger"
 	"strconv"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -107,13 +108,13 @@ func (u UserController) Register(ctx *gin.Context) {
 
 	// 查询用户名是否已经存在
 	user, _ := models.GetUserInfoByUserName(user_name)
-	if user.ID != 0 {
+	if user.Id != 0 {
 		JsonOutPut(ctx, 105, "用户名已经存在", common.EmptyData)
 	}
 
 	userId, err := models.AddUser(user_name, util.EncryMd5(password))
 	if err != nil {
-		JsonOutPut(ctx, 4001, "保存失败", common.EmptyData)
+		JsonOutPut(ctx, 106, "保存失败", common.EmptyData)
 		logger.Error(map[string]interface{}{"AddUser Error": err.Error()})
 		return
 	}
@@ -121,4 +122,51 @@ func (u UserController) Register(ctx *gin.Context) {
 		"userId": userId,
 	}
 	JsonOutPut(ctx, 0, "保存成功", data)
+}
+
+func (u UserController) Login(ctx *gin.Context) {
+	user_name := ctx.DefaultPostForm("user_name", "")
+	password := ctx.DefaultPostForm("password", "")
+
+	if user_name == "" || password == "" {
+		JsonOutPut(ctx, 103, "请输入正确的信息", common.EmptyData)
+		return
+	}
+
+	user, err := models.GetUserByUserName(user_name)
+
+	if err != nil {
+		JsonOutPut(ctx, 107, "登录失败，请联系管理员", common.EmptyData)
+		return
+	}
+
+	if user.Id == 0 {
+		JsonOutPut(ctx, 106, "用户名密码不正确", common.EmptyData)
+		return
+	}
+
+	if user.Password != util.EncryMd5(password) {
+		JsonOutPut(ctx, 106, "用户名密码不正确", common.EmptyData)
+		return
+	}
+
+	//var loginInfo = map[string]interface{}{}
+	loginInfo := make(map[string]interface{})
+	loginInfo["UserId"] = user.Id
+	loginInfo["UserName"] = user.UserName
+
+	logger.Info(loginInfo)
+
+	session := sessions.Default(ctx)
+	session.Set("LoginInfo", loginInfo)
+	session.Save()
+
+	var data = map[string]interface{}{
+		"user_id":    user.Id,
+		"user_name":  user.UserName,
+		"created_at": user.CreatedAt.Format("2006-01-02 15:04:05"),
+		"updated_at": user.UpdatedAt.Format("2006-01-02 15:04:05"),
+	}
+
+	JsonOutPut(ctx, 0, "success", data)
 }

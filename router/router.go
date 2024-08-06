@@ -6,6 +6,9 @@ import (
 
 	"net/http"
 
+	"github.com/gin-contrib/sessions"
+	// "github.com/gin-contrib/sessions/cookie"
+	sessions_redis "github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +18,14 @@ func Router() *gin.Engine {
 	// 引入日志工具
 	gEngine.Use(gin.LoggerWithConfig(logger.LoggerToFile()))
 	gEngine.Use(logger.Recover)
+
+	// session 存储
+	// store := cookie.NewStore([]byte("secret"))
+	// gEngine.Use(sessions.Sessions("mysession", store))
+
+	// redis 存储
+	store, _ := sessions_redis.NewStore(10, "tcp", "192.168.1.140:7379", "", []byte("secret"))
+	gEngine.Use(sessions.Sessions("mysession", store))
 
 	gEngine.GET("/ping", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "pong")
@@ -45,6 +56,8 @@ func Router() *gin.Engine {
 
 	// 定义Controller快捷方式
 	UserController := &controller.UserController{}
+	PlayerController := &controller.PlayerController{}
+	VoteController := &controller.VoteController{}
 	ErrorController := &controller.ErrorController{}
 
 	user := gEngine.Group("/user")
@@ -64,6 +77,20 @@ func Router() *gin.Engine {
 		user.POST("/delete", UserController.DeleteUserById)
 
 		user.POST("/register", UserController.Register)
+
+		user.POST("/login", UserController.Login)
+	}
+
+	player := gEngine.Group("/player")
+	{
+		player.POST("/list", PlayerController.GetPlayerList)
+
+	}
+
+	vote := gEngine.Group("/vote")
+	{
+		vote.POST("/vote", VoteController.Vote)
+
 	}
 
 	error := gEngine.Group("/error")
