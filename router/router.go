@@ -24,7 +24,7 @@ func Router() *gin.Engine {
 	// gEngine.Use(sessions.Sessions("mysession", store))
 
 	// redis 存储
-	store, _ := sessions_redis.NewStore(10, "tcp", "192.168.1.140:7379", "", []byte("secret"))
+	store, _ := sessions_redis.NewStore(10, "tcp", "192.168.1.130:7379", "", []byte("secret"))
 	gEngine.Use(sessions.Sessions("mysession", store))
 
 	gEngine.GET("/ping", func(ctx *gin.Context) {

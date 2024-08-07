@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"ginRanking/common"
 	"ginRanking/models"
 	"ginRanking/util"
@@ -150,15 +151,41 @@ func (u UserController) Login(ctx *gin.Context) {
 		return
 	}
 
+	session := sessions.Default(ctx)
+
+	// Map 整体放入Redis 无法成功 需要Json序列化
 	//var loginInfo = map[string]interface{}{}
-	loginInfo := make(map[string]interface{})
+	/* loginInfo := make(map[string]interface{})
 	loginInfo["UserId"] = user.Id
 	loginInfo["UserName"] = user.UserName
+	session.Set("LoginInfo", loginInfo) */
 
-	logger.Info(loginInfo)
+	// Map json 序列化后放入Redis 是可以的
+	/* loginInfo := make(map[string]interface{})
+	loginInfo["UserId"] = user.Id
+	loginInfo["UserName"] = user.UserName
+	loginInfoJson, _ := json.Marshal(loginInfo)
+	session.Set("LoginInfo", string(loginInfoJson)) */
 
-	session := sessions.Default(ctx)
-	session.Set("LoginInfo", loginInfo)
+	// 单值存放 正常存取
+	/* session.Set("LoginUid", user.Id)
+	session.Set("LoginUname", user.Name) */
+
+	// 结构体 整体放入Redis 无法成功 需要Json序列化
+	/* loginInfo := common.LoginInfo{
+		UserId:   user.Id,
+		UserName: user.UserName,
+	}
+	session.Set("LoginInfo", loginInfo) */
+
+	// 结构体序列化后放入Redis 是可以的
+	loginInfo := common.LoginInfo{
+		UserId:   user.Id,
+		UserName: user.UserName,
+	}
+	loginInfoJson, _ := json.Marshal(loginInfo)
+	session.Set("LoginInfo", string(loginInfoJson))
+
 	session.Save()
 
 	var data = map[string]interface{}{

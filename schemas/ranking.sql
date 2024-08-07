@@ -5,9 +5,9 @@
 # https://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# Host: 122.51.87.210 (MySQL 5.7.34-log)
+# Host: 127.0.0.1 (MySQL 5.7.18-15-log)
 # Database: ranking
-# Generation Time: 2024-08-05 03:07:49 +0000
+# Generation Time: 2024-08-07 06:44:30 +0000
 # ************************************************************
 
 
@@ -34,6 +34,15 @@ CREATE TABLE `activity` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+LOCK TABLES `activity` WRITE;
+/*!40000 ALTER TABLE `activity` DISABLE KEYS */;
+
+INSERT INTO `activity` (`id`, `activity_name`, `created_at`, `updated_at`)
+VALUES
+	(1,'六一活动','2024-06-01 00:00:00','2024-06-01 00:00:00');
+
+/*!40000 ALTER TABLE `activity` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table player
@@ -54,6 +63,18 @@ CREATE TABLE `player` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+LOCK TABLES `player` WRITE;
+/*!40000 ALTER TABLE `player` DISABLE KEYS */;
+
+INSERT INTO `player` (`id`, `activity_id`, `player_id`, `player_name`, `avatar`, `score`, `desc`, `created_at`, `updated_at`)
+VALUES
+	(1,1,1,'张三','/img/1.png',3,'我是参赛选手，请为我投票','2024-06-02 00:00:00','2024-08-07 14:43:22'),
+	(2,1,2,'李四','/img/2.png',0,'我是参赛选手，请为我投票','2024-06-02 00:00:00','2024-06-02 00:00:00'),
+	(3,1,3,'王五','/img/3.png',0,'我是参赛选手，请为我投票','2024-06-02 00:00:00','2024-06-02 00:00:00'),
+	(4,1,4,'陈六','/img/4.png',0,'我是参赛选手，请为我投票','2024-06-02 00:00:00','2024-06-02 00:00:00');
+
+/*!40000 ALTER TABLE `player` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table user
@@ -75,13 +96,12 @@ LOCK TABLES `user` WRITE;
 
 INSERT INTO `user` (`id`, `user_name`, `password`, `created_at`, `updated_at`)
 VALUES
-	(1,'张山','111','2024-07-18 00:00:00','2024-07-25 17:45:23'),
-	(2,'1111','111111','2024-07-18 18:01:55','2024-07-18 18:01:55'),
+	(1,'张山','96e79218965eb72c92a549dd5a330112','2024-07-18 00:00:00','2024-07-25 17:45:23'),
+	(2,'1111','96e79218965eb72c92a549dd5a330112','2024-07-18 18:01:55','2024-07-18 18:01:55'),
 	(7,'222','96e79218965eb72c92a549dd5a330112','2024-07-25 17:03:14','2024-07-25 17:03:14'),
-	(8,'王五','1111','2024-07-25 17:52:54','2024-07-25 17:55:17'),
-	(9,'陈六','b59c67bf196a4758191e42f76670ceba','2024-07-25 17:54:32','2024-07-25 17:54:32'),
-	(10,'111','96e79218965eb72c92a549dd5a330112','2024-07-25 17:55:36','2024-07-25 17:55:36'),
-	(11,'111','96e79218965eb72c92a549dd5a330112','2024-07-25 17:55:44','2024-07-25 17:55:44');
+	(8,'王五','96e79218965eb72c92a549dd5a330112','2024-07-25 17:52:54','2024-07-25 17:55:17'),
+	(9,'陈六','96e79218965eb72c92a549dd5a330112','2024-07-25 17:54:32','2024-07-25 17:54:32'),
+	(13,'111222','96e79218965eb72c92a549dd5a330112','2024-08-05 11:14:17','2024-08-05 11:14:17');
 
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -102,6 +122,15 @@ CREATE TABLE `vote` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+LOCK TABLES `vote` WRITE;
+/*!40000 ALTER TABLE `vote` DISABLE KEYS */;
+
+INSERT INTO `vote` (`id`, `user_id`, `activity_id`, `player_id`, `created_at`, `updated_at`)
+VALUES
+	(1,13,1,1,'2024-08-07 14:43:22','2024-08-07 14:43:22');
+
+/*!40000 ALTER TABLE `vote` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 

@@ -22,6 +22,17 @@ func (Player) TableName() string {
 	return "player"
 }
 
+func GetPlayerInfo(player_id, activity_id int) (Player, error) {
+
+	var player Player
+
+	err := DB.Where("activity_id = ? AND player_id = ?", player_id, activity_id).Find(&player).Error
+	if err != nil {
+		return player, err
+	}
+	return player, nil
+}
+
 func GetPlayerList(aid int) ([]Player, error) {
 
 	var players []Player
@@ -46,6 +57,10 @@ func GetPlayerByIDActivityID(player_id int, activity_id int) (Player, error) {
 
 func UpdatePlayerScore(player_id, activity_id int) (Player, error) {
 	var player Player
-	err := DB.Model(&player).Where("player_id = ?1 AND activity_id = ?2", player_id, activity_id).Update("score", gorm.Expr("score + ?", 1)).Error
-	return player, err
+	err := DB.Model(&player).Where("player_id = ? AND activity_id = ?", player_id, activity_id).Update("score", gorm.Expr("score + ?", 1)).Error
+	if err != nil {
+		return player, err
+	}
+	player, _ = GetPlayerInfo(player_id, activity_id)
+	return player, nil
 }
