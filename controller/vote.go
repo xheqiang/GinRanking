@@ -88,7 +88,7 @@ func (v VoteController) Vote(ctx *gin.Context) {
 	}
 
 	playerRes, err := models.UpdatePlayerScore(player_id, activity_id)
-	//fmt.Println(playerRes)
+	fmt.Println(playerRes)
 	if err != nil {
 		JsonOutPut(ctx, 305, "投票失败，请联系管理员", common.EmptyData)
 		return

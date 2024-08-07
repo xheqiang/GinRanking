@@ -26,18 +26,18 @@ func GetPlayerInfo(player_id, activity_id int) (Player, error) {
 
 	var player Player
 
-	err := DB.Where("activity_id = ? AND player_id = ?", player_id, activity_id).Find(&player).Error
+	err := DB.Where("activity_id = ? AND player_id = ?", activity_id, player_id).First(&player).Error
 	if err != nil {
 		return player, err
 	}
 	return player, nil
 }
 
-func GetPlayerList(aid int) ([]Player, error) {
+func GetPlayerList(aid int, sort string) ([]Player, error) {
 
 	var players []Player
 
-	err := DB.Where("activity_id = ?", aid).Find(&players).Error
+	err := DB.Where("activity_id = ?", aid).Order(sort).Find(&players).Error
 	if err != nil {
 		return nil, err
 	}
