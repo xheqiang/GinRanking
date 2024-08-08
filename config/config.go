@@ -12,9 +12,9 @@ const (
 
 	//MYSQLDB = "root:root@tcp(127.0.0.1:3306)/ranking?charset=utf8mb4&parseTime=True&loc=Local"
 
-
-	REDIS_HOST     = "127.0.0.1"
-	REDIS_PORT     = 6379
+	REDIS_HOST     = "192.168.1.130"
+	REDIS_PORT     = "7379"
 	REDIS_PASSWORD = ""
 	REDIS_DB       = 0
+	REDIS_ADDR     = REDIS_HOST + ":" + REDIS_PORT
 )
