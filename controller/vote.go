@@ -3,12 +3,15 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"ginRanking/cache"
 	"ginRanking/common"
 	"ginRanking/models"
 	"strconv"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type VoteController struct{}
@@ -94,8 +97,14 @@ func (v VoteController) Vote(ctx *gin.Context) {
 		return
 	}
 
+	// 更新排行榜redis
+	rankingKey := "player_ranking_" + activity_id_str
+	cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(playerRes.Score), Member: playerRes.PlayerId})
+	// 更新过期时间
+	cache.Redis.Expire(cache.Rctx, rankingKey, time.Hour*24)
+
 	var data = map[string]interface{}{
-		"player_id":   playerRes.Id,
+		"player_id":   playerRes.PlayerId,
 		"player_name": playerRes.PlayerName,
 		"score":       playerRes.Score,
 	}

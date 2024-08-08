@@ -11,4 +11,10 @@ const (
 	MYSQLDB = MYSQL_USER + ":" + MYSQL_PASSWORD + "@tcp(" + MYSQL_HOST + ":" + MYSQL_PORT + ")/" + MYSQL_DB + "?charset=" + MYSQL_CHARSET + "&parseTime=True&loc=Local"
 
 	//MYSQLDB = "root:root@tcp(127.0.0.1:3306)/ranking?charset=utf8mb4&parseTime=True&loc=Local"
+
+
+	REDIS_HOST     = "127.0.0.1"
+	REDIS_PORT     = 6379
+	REDIS_PASSWORD = ""
+	REDIS_DB       = 0
 )

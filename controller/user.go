@@ -28,7 +28,7 @@ func (u UserController) GetStaticUserInfo(ctx *gin.Context) {
 	JsonOutPut(ctx, 0, "success", data)
 }
 
-func (u UserController) GetUserInfoById(ctx *gin.Context) {
+func (u UserController) UserInfoById(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.PostForm("id"))
 
 	//logger.Debug(map[string]interface{}{"id": id}, "GetUserInfoById")
@@ -42,7 +42,7 @@ func (u UserController) GetUserInfoById(ctx *gin.Context) {
 	JsonOutPut(ctx, 0, "success", user)
 }
 
-func (u UserController) GetAllUserList(ctx *gin.Context) {
+func (u UserController) AllUserList(ctx *gin.Context) {
 	users, err := models.GetAllUserList()
 
 	if err != nil {

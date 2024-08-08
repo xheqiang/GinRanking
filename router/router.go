@@ -1,8 +1,10 @@
 package router
 
 import (
+	"ginRanking/config"
 	"ginRanking/controller"
 	"ginRanking/util/logger"
+	"strconv"
 
 	"net/http"
 
@@ -24,7 +26,7 @@ func Router() *gin.Engine {
 	// gEngine.Use(sessions.Sessions("mysession", store))
 
 	// redis 存储
-	store, _ := sessions_redis.NewStore(10, "tcp", "192.168.1.130:7379", "", []byte("secret"))
+	store, _ := sessions_redis.NewStore(10, "tcp", config.REDIS_HOST+":"+strconv.Itoa(config.REDIS_PORT), config.REDIS_PASSWORD, []byte("secret"))
 	gEngine.Use(sessions.Sessions("mysession", store))
 
 	gEngine.GET("/ping", func(ctx *gin.Context) {
@@ -66,9 +68,9 @@ func Router() *gin.Engine {
 		// user.POST("/staticInfo/:id/:name", controller.UserController{}.GetStaticUserInfo)
 		user.POST("/staticInfo/:id/:name", UserController.GetStaticUserInfo)
 
-		user.POST("/info", UserController.GetUserInfoById)
+		user.POST("/info", UserController.UserInfoById)
 
-		user.POST("/list", UserController.GetAllUserList)
+		user.POST("/list", UserController.AllUserList)
 
 		user.POST("/add", UserController.AddUser)
 
@@ -83,9 +85,11 @@ func Router() *gin.Engine {
 
 	player := gEngine.Group("/player")
 	{
-		player.POST("/list", PlayerController.GetPlayerList)
+		player.POST("/list", PlayerController.PlayerList)
 
-		player.POST("/ranking", PlayerController.GetPlayerRanking)
+		player.POST("/ranking", PlayerController.PlayerRanking)
+
+		player.POST("/rankingRedis", PlayerController.PlayerRankingRedis)
 	}
 
 	vote := gEngine.Group("/vote")
