@@ -7,7 +7,7 @@ import (
 func main() {
 	ginServer := router.Router()
 
-	ginServer.Run(":8000")
+	ginServer.Run(":8002")
 }
 
 
