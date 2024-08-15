@@ -145,8 +145,10 @@
                 vote(player_id) {
                     //投票
                     var user_id = localStorage.getItem('user_id')
-                    if(user_id == "") {
+                    console.log('user_id:' + user_id)
+                    if(user_id == null) {
                         alert("请先登录")
+                        location.href = "login.html"
                         return false;
                     }
                     if(player_id == "") {
