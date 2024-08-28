@@ -90,8 +90,8 @@ func (v VoteController) Vote(ctx *gin.Context) {
 		return
 	}
 
-	playerRes, err := models.UpdatePlayerScore(player_id, activity_id)
-	fmt.Println(playerRes)
+	playerInfo, err := models.UpdatePlayerScore(player_id, activity_id)
+	//fmt.Println(playerInfo)
 	if err != nil {
 		JsonOutPut(ctx, 305, "投票失败，请联系管理员", common.EmptyData)
 		return
@@ -99,14 +99,14 @@ func (v VoteController) Vote(ctx *gin.Context) {
 
 	// 更新排行榜redis
 	rankingKey := "player_ranking_" + activity_id_str
-	cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(playerRes.Score), Member: playerRes.PlayerId})
+	cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(playerInfo["score"].(int)), Member: playerInfo["player_id"].(int)})
 	// 更新过期时间
 	cache.Redis.Expire(cache.Rctx, rankingKey, time.Hour*24)
 
 	var data = map[string]interface{}{
-		"player_id":   playerRes.PlayerId,
-		"player_name": playerRes.PlayerName,
-		"score":       playerRes.Score,
+		"player_id":   playerInfo["player_id"],
+		"player_name": playerInfo["player_name"],
+		"score":       playerInfo["score"],
 	}
 
 	JsonOutPut(ctx, 0, "success", data)

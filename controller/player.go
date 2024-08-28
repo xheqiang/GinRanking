@@ -29,19 +29,19 @@ func (p PlayerController) PlayerList(ctx *gin.Context) {
 	JsonOutPut(ctx, 0, "success", playerList)
 }
 
-func (p PlayerController) PlayerRanking(ctx *gin.Context) {
+func (p PlayerController) PlayerRankingDb(ctx *gin.Context) {
 
 	activity_id_str := ctx.DefaultPostForm("activity_id", "")
 	activity_id, _ := strconv.Atoi(activity_id_str)
 
-	playerList, err := models.GetPlayerList(activity_id, "score desc")
+	rankList, err := models.GetPlayerRankingDb(activity_id, "score desc")
 
 	if err != nil {
 		JsonOutPut(ctx, 201, "无参赛选手信息", common.EmptyData)
 		return
 	}
 
-	JsonOutPut(ctx, 0, "success", playerList)
+	JsonOutPut(ctx, 0, "success", rankList)
 }
 
 func (p PlayerController) PlayerRankingRedis(ctx *gin.Context) {
@@ -51,14 +51,14 @@ func (p PlayerController) PlayerRankingRedis(ctx *gin.Context) {
 
 	rankingKey := "player_ranking_" + activity_id_str
 	rankList := cache.Redis.ZRevRangeWithScores(cache.Rctx, rankingKey, 0, -1).Val()
-	fmt.Print("rankList:", rankList)
+	fmt.Println("rankList:", rankList)
 	if len(rankList) == 0 {
-		playerList, err := models.GetPlayerList(activity_id, "score desc")
+		scoreList, err := models.GetPlayerScoreList(activity_id, "score desc")
 		if err != nil {
 			JsonOutPut(ctx, 201, "无参赛选手信息", common.EmptyData)
 		}
-		for _, playerData := range playerList {
-			redisRes := cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(playerData.Score), Member: playerData.PlayerId})
+		for _, scoreInfo := range scoreList {
+			redisRes := cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(scoreInfo.Score), Member: scoreInfo.PlayerId})
 			if redisRes.Err() != nil {
 				logger.Error(map[string]interface{}{
 					"redis Zadd error": redisRes.Err(),
@@ -66,8 +66,8 @@ func (p PlayerController) PlayerRankingRedis(ctx *gin.Context) {
 			}
 
 			rankList = append(rankList, redis.Z{
-				Score:  float64(playerData.Score),
-				Member: playerData.PlayerId,
+				Score:  float64(scoreInfo.Score),
+				Member: scoreInfo.PlayerId,
 			})
 		}
 		// 更新过期时间
@@ -82,9 +82,17 @@ func (p PlayerController) PlayerRankingRedis(ctx *gin.Context) {
 
 	rankInfoList := []map[string]interface{}{}
 	for _, rankData := range rankList {
+		playerId, _:= strconv.Atoi(rankData.Member.(string))
+		score := rankData.Score
+		playerInfo, _ := models.GetPlayerInfo(playerId, activity_id)
 		rankInfo := map[string]interface{}{
-			"playerId": rankData.Member,
-			"score":    rankData.Score,
+			"id":          playerId,
+			"activity_id": playerInfo.ActivityId,
+			"player_id":   playerInfo.PlayerId,
+			"player_name": playerInfo.PlayerName,
+			"score":       score,
+			"avatar":      playerInfo.Avatar,
+			"desc":        playerInfo.Desc,
 		}
 		rankInfoList = append(rankInfoList, rankInfo)
 	}

@@ -1,7 +1,7 @@
 # ginRanking
 
 
-Gin + GORM + Redis 开发朋友圈点赞 助力
+Gin + Gorm + Redis 开发朋友圈投票 点赞 助力
 
 
 ### 提交备忘
@@ -10,6 +10,15 @@ Gin + GORM + Redis 开发朋友圈点赞 助力
 
 
 ### 后续待办
-    1. 拆表 score不要和player耦合
-    2. 优化排行榜接口 使用Redis 玩家信息缓存Redis
-    3. Gin 框架高级学习 优化 框架封装 Redis GORM 封装使用
+    1. 拆表 score独立单表 涉及所有方法修改  OK
+    2. 优化排行榜接口 DB优化 完善Redis排行 结构统一 OK
+    3. 增加选手信息Redis缓存 优先读取 分数读取走Zset 
+    4. 编码规范 编码优化 变量大小写 驼峰 规则确定 统一
+    5. 增加Service层 controller model service (不必须)
+    6. Gin 框架高级学习 中间件 拦截器... 优化 框架封装 Redis GORM 封装使用
+
+
+### 代码参考
+    [后端完整](https://github.com/guardian-wjt/gin_ranking)
+    [带前端代码](https://github.com/CyberMidori/gin-ranking)
+

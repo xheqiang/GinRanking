@@ -86,7 +86,9 @@ func Router() *gin.Engine {
 	{
 		player.POST("/list", PlayerController.PlayerList)
 
-		player.POST("/ranking", PlayerController.PlayerRanking)
+		player.POST("/ranking", PlayerController.PlayerRankingRedis)
+
+		player.POST("/rankingDb", PlayerController.PlayerRankingDb)
 
 		player.POST("/rankingRedis", PlayerController.PlayerRankingRedis)
 	}
