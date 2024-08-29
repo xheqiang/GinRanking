@@ -83,10 +83,10 @@ func GetAllUserList() ([]UserInfo, error) {
 	return usersInfo, err
 }
 
-func GetUserInfoByUserName(user_name string) (UserInfo, error) {
+func GetUserInfoByUserName(userName string) (UserInfo, error) {
 	var user User
 
-	err := DB.Where("user_name = ?", user_name).First(&user).Error
+	err := DB.Where("user_name = ?", userName).First(&user).Error
 
 	var userInfo UserInfo
 	if err != nil {
@@ -103,10 +103,10 @@ func GetUserInfoByUserName(user_name string) (UserInfo, error) {
 	return userInfo, err
 }
 
-func GetUserByUserName(user_name string) (User, error) {
+func GetUserByUserName(userName string) (User, error) {
 	var user User
 
-	err := DB.Where("user_name = ?", user_name).First(&user).Error
+	err := DB.Where("user_name = ?", userName).First(&user).Error
 	if err != nil {
 		return user, err
 	}
@@ -129,8 +129,8 @@ func AddUser(user_name, password string) (int, error) {
 	return user.Id, err
 }
 
-func UpdateUserName(id int, user_name string) error {
-	err := DB.Model(&User{}).Where("id = ?", id).Update("user_name", user_name).Error
+func UpdateUserName(id int, userName string) error {
+	err := DB.Model(&User{}).Where("id = ?", id).Update("user_name", userName).Error
 	return err
 }
 

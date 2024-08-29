@@ -17,10 +17,10 @@ type PlayerController struct{}
 
 func (p PlayerController) PlayerList(ctx *gin.Context) {
 
-	activity_id_str := ctx.DefaultPostForm("activity_id", "")
-	activity_id, _ := strconv.Atoi(activity_id_str)
+	activityIdStr := ctx.DefaultPostForm("activity_id", "")
+	activityId, _ := strconv.Atoi(activityIdStr)
 
-	playerList, err := models.GetPlayerList(activity_id, "id asc")
+	playerList, err := models.GetPlayerList(activityId, "id asc")
 
 	if err != nil {
 		JsonOutPut(ctx, 201, "无参赛选手信息", common.EmptyData)
@@ -31,10 +31,10 @@ func (p PlayerController) PlayerList(ctx *gin.Context) {
 
 func (p PlayerController) PlayerRankingDb(ctx *gin.Context) {
 
-	activity_id_str := ctx.DefaultPostForm("activity_id", "")
-	activity_id, _ := strconv.Atoi(activity_id_str)
+	activityIdStr := ctx.DefaultPostForm("activity_id", "")
+	activityId, _ := strconv.Atoi(activityIdStr)
 
-	rankList, err := models.GetPlayerRankingDb(activity_id, "score desc")
+	rankList, err := models.GetPlayerRankingDb(activityId, "score desc")
 
 	if err != nil {
 		JsonOutPut(ctx, 201, "无参赛选手信息", common.EmptyData)
@@ -46,14 +46,14 @@ func (p PlayerController) PlayerRankingDb(ctx *gin.Context) {
 
 func (p PlayerController) PlayerRankingRedis(ctx *gin.Context) {
 
-	activity_id_str := ctx.DefaultPostForm("activity_id", "")
-	activity_id, _ := strconv.Atoi(activity_id_str)
+	activityIdStr := ctx.DefaultPostForm("activity_id", "")
+	activityId, _ := strconv.Atoi(activityIdStr)
 
-	rankingKey := "player_ranking_" + activity_id_str
+	rankingKey := "player_ranking_" + activityIdStr
 	rankList := cache.Redis.ZRevRangeWithScores(cache.Rctx, rankingKey, 0, -1).Val()
 	fmt.Println("rankList:", rankList)
 	if len(rankList) == 0 {
-		scoreList, err := models.GetPlayerScoreList(activity_id, "score desc")
+		scoreList, err := models.GetPlayerScoreList(activityId, "score desc")
 		if err != nil {
 			JsonOutPut(ctx, 201, "无参赛选手信息", common.EmptyData)
 		}
@@ -82,9 +82,9 @@ func (p PlayerController) PlayerRankingRedis(ctx *gin.Context) {
 
 	rankInfoList := []map[string]interface{}{}
 	for _, rankData := range rankList {
-		playerId, _:= strconv.Atoi(rankData.Member.(string))
+		playerId, _ := strconv.Atoi(rankData.Member.(string))
 		score := rankData.Score
-		playerInfo, _ := models.GetPlayerInfo(playerId, activity_id)
+		playerInfo, _ := models.GetPlayerInfo(playerId, activityId)
 		rankInfo := map[string]interface{}{
 			"id":          playerId,
 			"activity_id": playerInfo.ActivityId,

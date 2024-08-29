@@ -20,10 +20,10 @@ func (Score) TableName() string {
 	return "score"
 }
 
-func GetPlayerScore(activity_id, player_id int) (Score, error) {
+func GetPlayerScore(activityId, playerId int) (Score, error) {
 	var score Score
 
-	err := DB.Where("activity_id = ? AND player_id = ?", activity_id, player_id).First(&score).Error
+	err := DB.Where("activity_id = ? AND player_id = ?", activityId, playerId).First(&score).Error
 	/* if err != nil {
 		return score, err
 	} */
@@ -38,27 +38,27 @@ func GetPlayerScore(activity_id, player_id int) (Score, error) {
 	return score, nil
 }
 
-func GetPlayerScoreList(activity_id int, sort string) ([]Score, error) {
+func GetPlayerScoreList(activityId int, sort string) ([]Score, error) {
 
 	var scoreList []Score
 
-	err := DB.Where("activity_id = ?", activity_id).Order(sort).Find(&scoreList).Error
+	err := DB.Where("activity_id = ?", activityId).Order(sort).Find(&scoreList).Error
 	if err != nil {
 		return nil, err
 	}
 	return scoreList, nil
 }
 
-func UpdatePlayerScore(player_id, activity_id int) (map[string]interface{}, error) {
+func UpdatePlayerScore(playerId, activityId int) (map[string]interface{}, error) {
 
 	var score Score
 
-	err := DB.Where("player_id = ? AND activity_id = ?", player_id, activity_id).First(&score).Error
+	err := DB.Where("player_id = ? AND activity_id = ?", playerId, activityId).First(&score).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) { // 如果记录未找到，则创建一条新的记录
 			score = Score{
-				PlayerId:   player_id,
-				ActivityId: activity_id,
+				PlayerId:   playerId,
+				ActivityId: activityId,
 				Score:      1, // 初始分数为 1
 			}
 			err = DB.Create(&score).Error
@@ -69,14 +69,14 @@ func UpdatePlayerScore(player_id, activity_id int) (map[string]interface{}, erro
 			return common.EmptyData, err
 		}
 	} else {
-		// err = DB.Model(&score).Where("player_id = ? AND activity_id = ?", player_id, activity_id).Update("score", gorm.Expr("score + ?", 1)).Error
+		// err = DB.Model(&score).Where("player_id = ? AND activity_id = ?", playerId, activityId).Update("score", gorm.Expr("score + ?", 1)).Error
 		err = DB.Model(&score).Update("score", gorm.Expr("score + ?", 1)).Error
 		if err != nil {
 			return common.EmptyData, err
 		}
 	}
 
-	player, _ := GetPlayerInfo(player_id, activity_id)
+	player, _ := GetPlayerInfo(playerId, activityId)
 
 	data := map[string]interface{}{
 		"id":          player.Id,

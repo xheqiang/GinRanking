@@ -27,7 +27,7 @@ func (v VoteController) Vote(ctx *gin.Context) {
 		JsonOutPut(ctx, 301, "用户未登录，请登录后操作", common.EmptyData)
 		return
 	}
-	user_id, ok := loginInfo["UserId"].(int)
+	userId, ok := loginInfo["UserId"].(int)
 	if !ok {
 		JsonOutPut(ctx, 301, "用户未登录，请登录后操作", common.EmptyData)
 		return
@@ -37,11 +37,11 @@ func (v VoteController) Vote(ctx *gin.Context) {
 	/* loginInfoStr := session.Get("LoginInfo")
 	var loginInfo map[string]interface{}
 	json.Unmarshal([]byte(loginInfoStr.(string)), &loginInfo)
-	user_id_float := loginInfo["UserId"].(float64)
-	user_id := int(user_id_float) */
+	userIdFloat := loginInfo["UserId"].(float64)
+	userId := int(user_id_float) */
 
 	// 单值存放 获取
-	/* user_id := session.Get("LoginUid").(int) */
+	/* userId := session.Get("LoginUid").(int) */
 
 	// struct 不处理整体存入无法成功 获取值 为 nil
 	/* var loginInfo common.LoginInfo
@@ -50,7 +50,7 @@ func (v VoteController) Vote(ctx *gin.Context) {
 		return
 	}
 	loginInfo = session.Get("LoginInfo").(common.LoginInfo)
-	user_id := loginInfo.UserId
+	userId := loginInfo.UserId
 	fmt.Println("UserId:", loginInfo.UserId)
 	fmt.Println("UserName:", loginInfo.UserName) */
 
@@ -58,39 +58,39 @@ func (v VoteController) Vote(ctx *gin.Context) {
 	var loginInfo common.LoginInfo
 	loginInfoStr := session.Get("LoginInfo").(string)
 	json.Unmarshal([]byte(loginInfoStr), &loginInfo)
-	user_id := loginInfo.UserId
+	userId := loginInfo.UserId
 
-	fmt.Println("user_id: ", user_id)
+	fmt.Println("user_id: ", userId)
 
-	player_id_str := ctx.DefaultPostForm("player_id", "0")
-	player_id, _ := strconv.Atoi(player_id_str)
-	activity_id_str := ctx.DefaultPostForm("activity_id", "0")
-	activity_id, _ := strconv.Atoi(activity_id_str)
+	playerIdStr := ctx.DefaultPostForm("player_id", "0")
+	playerId, _ := strconv.Atoi(playerIdStr)
+	activityIdStr := ctx.DefaultPostForm("activity_id", "0")
+	activityId, _ := strconv.Atoi(activityIdStr)
 
-	if player_id == 0 || activity_id == 0 {
+	if playerId == 0 || activityId == 0 {
 		JsonOutPut(ctx, 302, "请输入正确的信息", common.EmptyData)
 		return
 	}
 
-	player, _ := models.GetPlayerByIDActivityID(player_id, activity_id)
+	player, _ := models.GetPlayerByIDActivityID(playerId, activityId)
 	if player.Id == 0 {
 		JsonOutPut(ctx, 303, "参赛选手信息错误，请重新选择", common.EmptyData)
 		return
 	}
 
-	vote, _ := models.GetVoteByUserId(user_id, activity_id, player_id)
+	vote, _ := models.GetVoteByUserId(userId, activityId, playerId)
 	if vote.Id != 0 {
 		JsonOutPut(ctx, 304, "您已经投过票了，请勿重复投票", common.EmptyData)
 		return
 	}
 
-	_, err := models.AddVote(user_id, activity_id, player_id)
+	_, err := models.AddVote(userId, activityId, playerId)
 	if err != nil {
 		JsonOutPut(ctx, 305, "投票失败，请联系管理员", common.EmptyData)
 		return
 	}
 
-	playerInfo, err := models.UpdatePlayerScore(player_id, activity_id)
+	playerInfo, err := models.UpdatePlayerScore(playerId, activityId)
 	//fmt.Println(playerInfo)
 	if err != nil {
 		JsonOutPut(ctx, 305, "投票失败，请联系管理员", common.EmptyData)
@@ -98,7 +98,7 @@ func (v VoteController) Vote(ctx *gin.Context) {
 	}
 
 	// 更新排行榜redis
-	rankingKey := "player_ranking_" + activity_id_str
+	rankingKey := "player_ranking_" + activityIdStr
 	cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(playerInfo["score"].(int)), Member: playerInfo["player_id"].(int)})
 	// 更新过期时间
 	cache.Redis.Expire(cache.Rctx, rankingKey, time.Hour*24)

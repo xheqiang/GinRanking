@@ -55,9 +55,9 @@ func (u UserController) AllUserList(ctx *gin.Context) {
 }
 
 func (u UserController) AddUser(ctx *gin.Context) {
-	user_name := ctx.DefaultPostForm("user_name", "")
+	userName := ctx.DefaultPostForm("user_name", "")
 	password := ctx.DefaultPostForm("password", "")
-	userId, err := models.AddUser(user_name, util.EncryMd5(password))
+	userId, err := models.AddUser(userName, util.EncryMd5(password))
 	if err != nil {
 		JsonOutPut(ctx, 0, "success", "Add User Error")
 		logger.Error(map[string]interface{}{"Add User Error": err.Error()})
@@ -69,8 +69,8 @@ func (u UserController) AddUser(ctx *gin.Context) {
 
 func (u UserController) UpdateUserName(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.PostForm("id"))
-	user_name := ctx.DefaultPostForm("user_name", "")
-	err := models.UpdateUserName(id, user_name)
+	userName := ctx.DefaultPostForm("user_name", "")
+	err := models.UpdateUserName(id, userName)
 	if err != nil {
 		JsonOutPut(ctx, 404, "error", "Update User Error")
 		logger.Error(map[string]interface{}{"Update User Error": err.Error()})
@@ -94,26 +94,26 @@ func (u UserController) DeleteUserById(ctx *gin.Context) {
 // 开始正式处理业务逻辑
 // 注册
 func (u UserController) Register(ctx *gin.Context) {
-	user_name := ctx.DefaultPostForm("user_name", "")
+	userName := ctx.DefaultPostForm("user_name", "")
 	password := ctx.DefaultPostForm("password", "")
-	confirm_password := ctx.DefaultPostForm("confirm_password", "")
+	confirmPassword := ctx.DefaultPostForm("confirm_password", "")
 
-	if user_name == "" || password == "" || confirm_password == "" {
+	if userName == "" || password == "" || confirmPassword == "" {
 		JsonOutPut(ctx, 103, "请输入正确的信息", common.EmptyData)
 		return
 	}
-	if password != confirm_password {
+	if password != confirmPassword {
 		JsonOutPut(ctx, 104, "两次密码不一致", common.EmptyData)
 		return
 	}
 
 	// 查询用户名是否已经存在
-	user, _ := models.GetUserInfoByUserName(user_name)
+	user, _ := models.GetUserInfoByUserName(userName)
 	if user.Id != 0 {
 		JsonOutPut(ctx, 105, "用户名已经存在", common.EmptyData)
 	}
 
-	userId, err := models.AddUser(user_name, util.EncryMd5(password))
+	userId, err := models.AddUser(userName, util.EncryMd5(password))
 	if err != nil {
 		JsonOutPut(ctx, 106, "保存失败", common.EmptyData)
 		logger.Error(map[string]interface{}{"AddUser Error": err.Error()})
@@ -126,15 +126,15 @@ func (u UserController) Register(ctx *gin.Context) {
 }
 
 func (u UserController) Login(ctx *gin.Context) {
-	user_name := ctx.DefaultPostForm("user_name", "")
+	userName := ctx.DefaultPostForm("user_name", "")
 	password := ctx.DefaultPostForm("password", "")
 
-	if user_name == "" || password == "" {
+	if userName == "" || password == "" {
 		JsonOutPut(ctx, 103, "请输入正确的信息", common.EmptyData)
 		return
 	}
 
-	user, err := models.GetUserByUserName(user_name)
+	user, err := models.GetUserByUserName(userName)
 
 	if err != nil {
 		JsonOutPut(ctx, 107, "登录失败，请联系管理员", common.EmptyData)

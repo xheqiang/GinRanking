@@ -15,20 +15,20 @@ func (Vote) TableName() string {
 	return "vote"
 }
 
-func GetVoteByUserId(user_id, activity_id, player_id int) (Vote, error) {
+func GetVoteByUserId(userId, activityId, playerId int) (Vote, error) {
 	var vote Vote
-	err := DB.Where("user_id = ? AND activity_id = ? AND player_id = ? ", user_id, activity_id, player_id).First(&vote).Error
+	err := DB.Where("user_id = ? AND activity_id = ? AND player_id = ? ", userId, activityId, playerId).First(&vote).Error
 	if err != nil {
 		return vote, err
 	}
 	return vote, nil
 }
 
-func AddVote(user_id, activity_id, player_id int) (Vote, error) {
+func AddVote(userId, activityId, playerId int) (Vote, error) {
 	vote := Vote{
-		UserId:     user_id,
-		ActivityId: activity_id,
-		PlayerId:   player_id,
+		UserId:     userId,
+		ActivityId: activityId,
+		PlayerId:   playerId,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
