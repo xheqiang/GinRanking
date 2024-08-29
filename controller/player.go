@@ -67,7 +67,7 @@ func (p PlayerController) PlayerRankingRedis(ctx *gin.Context) {
 
 			rankList = append(rankList, redis.Z{
 				Score:  float64(scoreInfo.Score),
-				Member: scoreInfo.PlayerId,
+				Member: strconv.Itoa(scoreInfo.PlayerId), // Redis返回的Member是个字符串 这里保持一致
 			})
 		}
 		// 更新过期时间
