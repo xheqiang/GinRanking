@@ -6,6 +6,7 @@ import (
 	"ginRanking/cache"
 	"ginRanking/common"
 	"ginRanking/models"
+	"ginRanking/services"
 	"strconv"
 	"time"
 
@@ -16,7 +17,40 @@ import (
 
 type VoteController struct{}
 
+var VoteService services.VoteService
+
 func (v VoteController) Vote(ctx *gin.Context) {
+
+	playerIdStr := ctx.DefaultPostForm("player_id", "0")
+	playerId, _ := strconv.Atoi(playerIdStr)
+	activityIdStr := ctx.DefaultPostForm("activity_id", "0")
+	activityId, _ := strconv.Atoi(activityIdStr)
+
+	if playerId == 0 || activityId == 0 {
+		JsonOutPut(ctx, 302, "请输入正确的信息", common.EmptyData)
+		return
+	}
+
+	session := sessions.Default(ctx)
+	// struct 序列化json字符串后 存入session 反序列化后可以正常获取
+	var loginInfo common.LoginInfo
+	loginInfoStr, ok := session.Get("LoginInfo").(string)
+	if !ok {
+		JsonOutPut(ctx, 302, "您未登录，请登录后投票", common.EmptyData)
+		return
+	}
+	json.Unmarshal([]byte(loginInfoStr), &loginInfo)
+	userId := loginInfo.UserId
+	fmt.Println("user_id: ", userId)
+
+	result := VoteService.Vote(userId, activityId, playerId)
+
+	JsonOutPut(ctx, result["status"].(int), result["msg"], result["data"])
+}
+
+// -------------------------------------------------------------------------------------------------------//
+
+func (v VoteController) VoteBak(ctx *gin.Context) {
 
 	session := sessions.Default(ctx)
 

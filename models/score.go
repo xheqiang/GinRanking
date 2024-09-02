@@ -87,12 +87,14 @@ func UpdatePlayerScore(playerId, activityId int) (map[string]interface{}, error)
 			return common.EmptyData, err
 		}
 	} else {
-		// err = DB.Model(&score).Where("player_id = ? AND activity_id = ?", playerId, activityId).Update("score", gorm.Expr("score + ?", 1)).Error
-		err = DB.Model(&score).Update("score", gorm.Expr("score + ?", 1)).Error
+		//err = DB.Model(&score).Update("score", gorm.Expr("score + ?", 1)).Error
+		err = DB.Model(&score).Where("player_id = ? AND activity_id = ?", playerId, activityId).Update("score", gorm.Expr("score + ?", 1)).Error
 		if err != nil {
 			return common.EmptyData, err
 		}
 	}
+
+	DB.Where("player_id = ? AND activity_id = ?", playerId, activityId).First(&score)
 
 	player, _ := GetPlayerInfo(playerId, activityId)
 

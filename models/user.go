@@ -16,13 +16,6 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type UserInfo struct {
-	Id        int    `json:"id"`
-	UserName  string `json:"user_name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-}
-
 type CustomTime time.Time
 
 func (ct CustomTime) MarshalJSON() ([]byte, error) {
@@ -35,72 +28,46 @@ func (User) TableName() string {
 	return "user"
 }
 
-func GetUserInfoById(id int) (UserInfo, error) {
+func GetUserInfoById(id int) (User, error) {
 	var user User
 
 	if DB == nil {
 		logger.Error(map[string]interface{}{
 			"mysql connect error": "database connection is not initialized",
 		})
-		return UserInfo{}, nil
+		return User{}, nil
 	}
 
 	err := DB.Where("id = ?", id).First(&user).Error
 	if err != nil {
-		return UserInfo{}, err
+		return User{}, err
 	}
 
-	UserRes := UserInfo{
-		Id:        user.Id,
-		UserName:  user.UserName,
-		CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
-	}
-
-	return UserRes, err
+	return user, err
 }
 
-func GetAllUserList() ([]UserInfo, error) {
+func GetAllUserList() ([]User, error) {
 
 	var users []User
 	err := DB.Where("1 = ?", 1).Find(&users).Error
 
-	var usersInfo []UserInfo
 	if err != nil {
-		return usersInfo, err
+		return users, err
 	}
 
-	for _, u := range users {
-		userInfo := UserInfo{
-			Id:        u.Id,
-			UserName:  u.UserName,
-			CreatedAt: u.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt: u.UpdatedAt.Format("2006-01-02 15:04:05"),
-		}
-		usersInfo = append(usersInfo, userInfo)
-	}
-
-	return usersInfo, err
+	return users, err
 }
 
-func GetUserInfoByUserName(userName string) (UserInfo, error) {
+func GetUserInfoByUserName(userName string) (User, error) {
 	var user User
 
 	err := DB.Where("user_name = ?", userName).First(&user).Error
 
-	var userInfo UserInfo
 	if err != nil {
-		return userInfo, err
+		return user, err
 	}
 
-	userInfo = UserInfo{
-		Id:        user.Id,
-		UserName:  user.UserName,
-		CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
-	}
-
-	return userInfo, err
+	return user, err
 }
 
 func GetUserByUserName(userName string) (User, error) {

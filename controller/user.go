@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"ginRanking/common"
 	"ginRanking/models"
+	"ginRanking/services"
 	"ginRanking/util"
 	"ginRanking/util/logger"
 	"strconv"
@@ -14,16 +15,16 @@ import (
 
 type UserController struct{}
 
+// 引入Service快捷方式
+var UserService = services.UserService{}
+
 // 静态返回 测试专用
 func (u UserController) GetStaticUserInfo(ctx *gin.Context) {
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	name := ctx.Param("name")
 
-	data := map[string]interface{}{
-		"id":   id,
-		"name": name,
-	}
+	data := UserService.GetStaticUserInfo(id, name)
 
 	JsonOutPut(ctx, 0, "success", data)
 }
@@ -33,7 +34,7 @@ func (u UserController) UserInfoById(ctx *gin.Context) {
 
 	//logger.Debug(map[string]interface{}{"id": id}, "GetUserInfoById")
 
-	user, err := models.GetUserInfoById(id)
+	user, err := UserService.GetUserInfoById(id)
 	if err != nil {
 		JsonOutPut(ctx, 0, "success", "Not Find User")
 		logger.Error(map[string]interface{}{"Find User Info Error": err.Error()})
@@ -43,8 +44,7 @@ func (u UserController) UserInfoById(ctx *gin.Context) {
 }
 
 func (u UserController) AllUserList(ctx *gin.Context) {
-	users, err := models.GetAllUserList()
-
+	users, err := UserService.GetAllUserList()
 	if err != nil {
 		JsonOutPut(ctx, 0, "success", "Not Find User List")
 		logger.Error(map[string]interface{}{"Find User List Error": err.Error()})
@@ -57,7 +57,8 @@ func (u UserController) AllUserList(ctx *gin.Context) {
 func (u UserController) AddUser(ctx *gin.Context) {
 	userName := ctx.DefaultPostForm("user_name", "")
 	password := ctx.DefaultPostForm("password", "")
-	userId, err := models.AddUser(userName, util.EncryMd5(password))
+
+	userId, err := UserService.AddUser(userName, password)
 	if err != nil {
 		JsonOutPut(ctx, 0, "success", "Add User Error")
 		logger.Error(map[string]interface{}{"Add User Error": err.Error()})
@@ -70,7 +71,7 @@ func (u UserController) AddUser(ctx *gin.Context) {
 func (u UserController) UpdateUserName(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.PostForm("id"))
 	userName := ctx.DefaultPostForm("user_name", "")
-	err := models.UpdateUserName(id, userName)
+	err := UserService.UpdateUserName(id, userName)
 	if err != nil {
 		JsonOutPut(ctx, 404, "error", "Update User Error")
 		logger.Error(map[string]interface{}{"Update User Error": err.Error()})
@@ -81,7 +82,7 @@ func (u UserController) UpdateUserName(ctx *gin.Context) {
 
 func (u UserController) DeleteUserById(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.PostForm("id"))
-	userId, err := models.DeleteUserById(id)
+	userId, err := UserService.DeleteUserById(id)
 	if err != nil {
 		JsonOutPut(ctx, 0, "success", "Delete User Error")
 		logger.Error(map[string]interface{}{"Delete User Error": err.Error()})
@@ -107,8 +108,46 @@ func (u UserController) Register(ctx *gin.Context) {
 		return
 	}
 
+	result := UserService.Register(userName, password)
+
+	JsonOutPut(ctx, result["status"].(int), result["msg"], result["data"])
+}
+
+func (u UserController) Login(ctx *gin.Context) {
+	userName := ctx.DefaultPostForm("user_name", "")
+	password := ctx.DefaultPostForm("password", "")
+
+	if userName == "" || password == "" {
+		JsonOutPut(ctx, 103, "请输入正确的信息", common.EmptyData)
+		return
+	}
+
+	result := UserService.Login(ctx, userName, password)
+
+	JsonOutPut(ctx, result["status"].(int), result["msg"], result["data"])
+}
+
+// -------------------------------------------------------------------------------------------------------//
+
+// Controller + Model 模式
+
+// 注册
+func (u UserController) RegisterBak(ctx *gin.Context) {
+	userName := ctx.DefaultPostForm("user_name", "")
+	password := ctx.DefaultPostForm("password", "")
+	confirmPassword := ctx.DefaultPostForm("confirm_password", "")
+
+	if userName == "" || password == "" || confirmPassword == "" {
+		JsonOutPut(ctx, 103, "请输入正确的信息", common.EmptyData)
+		return
+	}
+	if password != confirmPassword {
+		JsonOutPut(ctx, 104, "两次密码不一致", common.EmptyData)
+		return
+	}
+
 	// 查询用户名是否已经存在
-	user, _ := models.GetUserInfoByUserName(userName)
+	user, _ := UserService.GetUserInfoByUserName(userName)
 	if user.Id != 0 {
 		JsonOutPut(ctx, 105, "用户名已经存在", common.EmptyData)
 	}
@@ -125,7 +164,8 @@ func (u UserController) Register(ctx *gin.Context) {
 	JsonOutPut(ctx, 0, "保存成功", data)
 }
 
-func (u UserController) Login(ctx *gin.Context) {
+// 登录
+func (u UserController) LoginBak(ctx *gin.Context) {
 	userName := ctx.DefaultPostForm("user_name", "")
 	password := ctx.DefaultPostForm("password", "")
 
@@ -155,28 +195,28 @@ func (u UserController) Login(ctx *gin.Context) {
 
 	// Map 整体放入Redis 无法成功 需要Json序列化
 	//var loginInfo = map[string]interface{}{}
-	/* loginInfo := make(map[string]interface{})
-	loginInfo["UserId"] = user.Id
-	loginInfo["UserName"] = user.UserName
-	session.Set("LoginInfo", loginInfo) */
+	// loginInfo := make(map[string]interface{})
+	// loginInfo["UserId"] = user.Id
+	// loginInfo["UserName"] = user.UserName
+	// session.Set("LoginInfo", loginInfo)
 
 	// Map json 序列化后放入Redis 是可以的
-	/* loginInfo := make(map[string]interface{})
-	loginInfo["UserId"] = user.Id
-	loginInfo["UserName"] = user.UserName
-	loginInfoJson, _ := json.Marshal(loginInfo)
-	session.Set("LoginInfo", string(loginInfoJson)) */
+	// loginInfo := make(map[string]interface{})
+	// loginInfo["UserId"] = user.Id
+	// loginInfo["UserName"] = user.UserName
+	// loginInfoJson, _ := json.Marshal(loginInfo)
+	// session.Set("LoginInfo", string(loginInfoJson))
 
 	// 单值存放 正常存取
-	/* session.Set("LoginUid", user.Id)
-	session.Set("LoginUname", user.Name) */
+	// session.Set("LoginUid", user.Id)
+	// session.Set("LoginUname", user.Name)
 
 	// 结构体 整体放入Redis 无法成功 需要Json序列化
-	/* loginInfo := common.LoginInfo{
-		UserId:   user.Id,
-		UserName: user.UserName,
-	}
-	session.Set("LoginInfo", loginInfo) */
+	// loginInfo := common.LoginInfo{
+	// 	UserId:   user.Id,
+	// 	UserName: user.UserName,
+	// }
+	// session.Set("LoginInfo", loginInfo)
 
 	// 结构体序列化后放入Redis 是可以的
 	loginInfo := common.LoginInfo{

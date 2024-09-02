@@ -14,7 +14,7 @@ Gin + Gorm + Redis 开发朋友圈投票 点赞 助力
     2. 优化排行榜接口 DB优化 完善Redis排行 结构统一 OK
     3. 增加选手信息Redis缓存 优先读取 分数读取走Zset OK 
     4. 编码规范 编码优化 变量大小写 驼峰 规则确定 统一 OK
-    5. 增加Service层 controller model service (不必须)
+    5. 增加Service层 controller model service (不必须) OK
     6. Gin 框架高级学习 中间件 拦截器... 优化 框架封装 Redis GORM 封装使用
 
 
