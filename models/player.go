@@ -71,10 +71,11 @@ func GetPlayerInfo(playerId, activityId int) (Player, error) {
 	playerInfoKey := fmt.Sprintf("player_info_%d_%d", activityId, playerId)
 	cachedPlayer, err := cache.Redis.Get(cache.Rctx, playerInfoKey).Result()
 
-	if err != redis.Nil { // 如果 Redis 错误不是缓存不存在的错误
+	if err != nil && err != redis.Nil {
 		return player, err
 	}
-	if err == nil { // 如果 Redis 命中缓存
+
+	if err == nil {
 		err = json.Unmarshal([]byte(cachedPlayer), &player)
 		if err != nil {
 			return player, err
@@ -115,7 +116,7 @@ func GetPlayerList(activityId int, sort string) ([]PlayerInfo, error) {
 			ActivityId: player.ActivityId,
 			PlayerId:   player.PlayerId,
 			PlayerName: player.PlayerName,
-			Score:      score.Score,
+			Score:      score,
 			Avatar:     player.Avatar,
 			Desc:       player.Desc,
 		}
@@ -159,11 +160,10 @@ func GetPlayerRankingDb(activityId int, sort string) ([]map[string]interface{}, 
 	data := []map[string]interface{}{}
 	for _, playerInfo := range playerList {
 		playerId := playerInfo.PlayerId
-		scoreInfo, err := GetPlayerScore(activityId, playerId)
+		score, err := GetPlayerScore(activityId, playerId)
 		if err != nil {
 			return nil, err
 		}
-		score := scoreInfo.Score
 		dataInfo := map[string]interface{}{
 			"id":          playerId,
 			"activity_id": playerInfo.ActivityId,

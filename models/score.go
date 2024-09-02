@@ -2,9 +2,12 @@ package models
 
 import (
 	"errors"
+	"ginRanking/cache"
 	"ginRanking/common"
+	"strconv"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -20,22 +23,37 @@ func (Score) TableName() string {
 	return "score"
 }
 
-func GetPlayerScore(activityId, playerId int) (Score, error) {
-	var score Score
+func GetPlayerScore(activityId, playerId int) (int, error) {
 
-	err := DB.Where("activity_id = ? AND player_id = ?", activityId, playerId).First(&score).Error
+	rankingKey := "player_ranking_" + strconv.Itoa(activityId)
+	playIdStr := strconv.Itoa(playerId)
+	playerScore, err := cache.Redis.ZScore(cache.Rctx, rankingKey, playIdStr).Result()
+
+	if err != nil && err != redis.Nil {
+		return 0, err
+	}
+
+	if err == nil {
+		return int(playerScore), nil
+	}
+
+	var score Score
+	err = DB.Where("activity_id = ? AND player_id = ?", activityId, playerId).First(&score).Error
 	/* if err != nil {
-		return score, err
+		return 0, err
 	} */
 	// 未找到 也会抛一个错误 当数据库未找到时候 不能抛异常 抛出空数据
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) { // 记录未找到，返回分数为 0 的 Score 结构体
-			return Score{Score: 0}, nil
+			//return Score{Score: 0}, nil
+			cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(0), Member: playIdStr})
+			return 0, nil
 		}
 		// 发生其他错误，需要抛出来
-		return score, err
+		return 0, err
 	}
-	return score, nil
+	cache.Redis.ZAdd(cache.Rctx, rankingKey, redis.Z{Score: float64(score.Score), Member: playIdStr})
+	return score.Score, nil
 }
 
 func GetPlayerScoreList(activityId int, sort string) ([]Score, error) {
