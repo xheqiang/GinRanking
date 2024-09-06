@@ -16,10 +16,13 @@ import (
 var LogBaseDir = "./runtime/log"
 
 func init() {
-	logrus.SetFormatter(&logrus.JSONFormatter{
+	/* logrus.SetFormatter(&logrus.JSONFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+	}) */
+	// logrus.SetReportCaller(false) // 用来指示日志是否要报告调用者的信息
+	logrus.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
-	logrus.SetReportCaller(false) // 用来指示日志是否要报告调用者的信息
 }
 
 func Write(msg string, filename string) {
@@ -71,8 +74,8 @@ func setOutPutFile(level logrus.Level, logName string) {
 		}
 	}
 
-	timeStr := time.Now().Format("2006-01-02")
-	fileName := path.Join(LogBaseDir, logName+"_"+timeStr+".log")
+	timeStr := time.Now().Format("20060102")
+	fileName := path.Join(LogBaseDir, logName+"."+timeStr+".log")
 
 	var err error
 	os.Stderr, err = os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
@@ -92,7 +95,7 @@ func LoggerToFile() gin.LoggerConfig {
 		}
 	}
 
-	timeStr := time.Now().Format("2006-01-02")
+	timeStr := time.Now().Format("20060102")
 	fileName := path.Join(LogBaseDir, "access_log."+timeStr+".log")
 
 	os.Stderr, _ = os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)

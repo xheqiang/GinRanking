@@ -12,10 +12,15 @@ var Redis *redis.Client
 var Rctx context.Context
 
 func init() {
+
+	redisAddr := config.AppConf.RedisConfig.Host + ":" + config.AppConf.RedisConfig.Port
+	redisDb := config.AppConf.RedisConfig.DB
+	redisPassword := config.AppConf.RedisConfig.Password
+
 	Redis = redis.NewClient(&redis.Options{
-		Addr:     config.REDIS_ADDR,
-		DB:       config.REDIS_DB,
-		Password: config.REDIS_PASSWORD,
+		Addr:     redisAddr,
+		DB:       redisDb,
+		Password: redisPassword,
 	})
 
 	Rctx = context.Background()
