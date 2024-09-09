@@ -21,48 +21,79 @@ func init() {
 	}) */
 	// logrus.SetReportCaller(false) // 用来指示日志是否要报告调用者的信息
 	logrus.SetFormatter(&logrus.TextFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
+		TimestampFormat: "2006-01-02 15:04:05.000",
 	})
+	//logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logrus.DebugLevel)
+	//logrus.SetReportCaller(true)
 }
 
 func Write(msg string, filename string) {
-	setOutPutFile(logrus.InfoLevel, filename)
+	//setOutPutFile(logrus.InfoLevel, filename)
+	setGlobalOutPutFile()
 	logrus.Info(msg)
 }
 
+func Trace(fields logrus.Fields, args ...interface{}) {
+	//setOutPutFile(logrus.TraceLevel, "trace")
+	setGlobalOutPutFile()
+	logrus.WithFields(fields).Trace(args...)
+}
 func Debug(fields logrus.Fields, args ...interface{}) {
-	setOutPutFile(logrus.DebugLevel, "debug")
+	//setOutPutFile(logrus.DebugLevel, "debug")
+	setGlobalOutPutFile()
 	logrus.WithFields(fields).Debug(args...)
 }
 
 func Info(fields logrus.Fields, args ...interface{}) {
-	setOutPutFile(logrus.InfoLevel, "info")
+	//setOutPutFile(logrus.InfoLevel, "info")
+	setGlobalOutPutFile()
 	logrus.WithFields(fields).Info(args...)
 }
 
 func Warn(fields logrus.Fields, args ...interface{}) {
-	setOutPutFile(logrus.WarnLevel, "warn")
+	//setOutPutFile(logrus.WarnLevel, "warn")
+	setGlobalOutPutFile()
 	logrus.WithFields(fields).Warn(args...)
-}
-
-func Fatal(fields logrus.Fields, args ...interface{}) {
-	setOutPutFile(logrus.FatalLevel, "fatal")
-	logrus.WithFields(fields).Fatal(args...)
 }
 
 func Error(fields logrus.Fields, args ...interface{}) {
 	setOutPutFile(logrus.ErrorLevel, "error")
+	setGlobalOutPutFile()
 	logrus.WithFields(fields).Error(args...)
+}
+
+func Fatal(fields logrus.Fields, args ...interface{}) {
+	setOutPutFile(logrus.FatalLevel, "fatal")
+	setGlobalOutPutFile()
+	logrus.WithFields(fields).Fatal(args...)
 }
 
 func Panic(fields logrus.Fields, args ...interface{}) {
 	setOutPutFile(logrus.PanicLevel, "panic")
+	setGlobalOutPutFile()
 	logrus.WithFields(fields).Panic(args...)
 }
 
-func Trace(fields logrus.Fields, args ...interface{}) {
-	setOutPutFile(logrus.TraceLevel, "trace")
-	logrus.WithFields(fields).Trace(args...)
+func setGlobalOutPutFile() {
+
+	if _, err := os.Stat(LogBaseDir); os.IsNotExist(err) {
+		err = os.MkdirAll(LogBaseDir, 0777)
+		if err != nil {
+			panic(fmt.Errorf("create log dir '%s' error: %s ", LogBaseDir, err))
+		}
+	}
+
+	timeStr := time.Now().Format("20060102")
+	fileName := path.Join(LogBaseDir, "app_custom"+"."+timeStr+".log")
+
+	var err error
+	os.Stderr, err = os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		panic(fmt.Errorf("open log file '%s' error: %s ", fileName, err))
+	}
+
+	logrus.SetOutput(os.Stderr)
 }
 
 func setOutPutFile(level logrus.Level, logName string) {
@@ -75,7 +106,7 @@ func setOutPutFile(level logrus.Level, logName string) {
 	}
 
 	timeStr := time.Now().Format("20060102")
-	fileName := path.Join(LogBaseDir, logName+"."+timeStr+".log")
+	fileName := path.Join(LogBaseDir, "app_"+logName+"."+timeStr+".log")
 
 	var err error
 	os.Stderr, err = os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
@@ -96,7 +127,7 @@ func LoggerToFile() gin.LoggerConfig {
 	}
 
 	timeStr := time.Now().Format("20060102")
-	fileName := path.Join(LogBaseDir, "access_log."+timeStr+".log")
+	fileName := path.Join(LogBaseDir, "app_access."+timeStr+".log")
 
 	os.Stderr, _ = os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 
@@ -152,4 +183,25 @@ func Recover(ctx *gin.Context) {
 		}
 	}()
 	ctx.Next()
+}
+
+func GetGinOutPutFile() *os.File {
+
+	if _, err := os.Stat(LogBaseDir); os.IsNotExist(err) {
+		err = os.MkdirAll(LogBaseDir, 0777)
+		if err != nil {
+			panic(fmt.Errorf("create log dir '%s' error: %s ", LogBaseDir, err))
+		}
+	}
+
+	timeStr := time.Now().Format("20060102")
+	fileName := path.Join(LogBaseDir, "app_gindef"+"."+timeStr+".log")
+
+	var err error
+	os.Stderr, err = os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		panic(fmt.Errorf("open log file '%s' error: %s ", fileName, err))
+	}
+
+	return os.Stderr
 }

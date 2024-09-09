@@ -4,6 +4,8 @@ import (
 	"ginRanking/config"
 	"ginRanking/controller"
 	"ginRanking/util/logger"
+	"io"
+	"os"
 
 	"net/http"
 
@@ -14,6 +16,11 @@ import (
 )
 
 func Router() *gin.Engine {
+
+	ginOutPutFile := logger.GetGinOutPutFile()
+	//gin.DefaultWriter = io.MultiWriter(ginOutPutFile)
+	gin.DefaultWriter = io.MultiWriter(ginOutPutFile, os.Stdout) // 打印请求日志 需要在放在路由实例化之前 放在 gin.Default() 后不可以
+
 	gEngine := gin.Default()
 
 	// 引入日志工具

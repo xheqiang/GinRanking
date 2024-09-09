@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"ginRanking/util/logger"
 	"os"
 	"path"
 
@@ -62,6 +63,7 @@ func init() {
 
 	if err := viperConfig.ReadInConfig(); err != nil { // 读取配置信息 读取配置信息失败
 		fmt.Printf("viper Read Config failed, err:%v\n", err)
+		logger.Error(map[string]interface{}{"viper Read Config failed err: ": err}, "viper Read Config Error")
 		return
 	}
 
@@ -80,6 +82,7 @@ func init() {
 		return
 	}
 	//fmt.Println("AppConf:", AppConf)
+	logger.Info(map[string]interface{}{"AppConf Info": AppConf}, "viper Init Config Ok!!!")
 
 	viperConfig.WatchConfig() // 对配置文件进行监视，若有改变就重新反序列到Conf中
 	viperConfig.OnConfigChange(func(in fsnotify.Event) {
